@@ -161,9 +161,9 @@ impl Contract {
 
         // token_admin: AccountId
         let client = token::Client::new(&e, get_token_id(&e));
-        // let nonce = BigInt::zero(&e);
+        let nonce = BigInt::zero(&e);
         // let nonce = client.nonce(&Signature::Invoker.identifier(&e)); // this may not work
-        let nonce = client.nonce(&sig.identifier(&e)); // this may not work
+        // let nonce = client.nonce(&sig.identifier(&e)); // this may not work
         log!(&e, "SC: nonce: {} ", &nonce);
 
 
@@ -174,7 +174,7 @@ impl Contract {
         log!(&e, "SC: target_amount1: {} ", &target_amount1);
 
         // client.mint(&Signature::Invoker, &nonce, &to, &target_amount); // this won't work as invoker is smart contract
-        client.mint(&sig, &nonce, &to, &target_amount1);
+        client.mint(&sig, &nonce, &to, &target_amount);
     }
 
     // test method name

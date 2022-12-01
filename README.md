@@ -5,24 +5,24 @@
 
 ### Blocker Dtd: 25/11/22
 
-- Blocker: At L547 https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L547, I'm trying to make a cross-program invocation, but it doesn't work. 
+- Blocker: At L199 https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L199, I'm trying to make a cross-program invocation, but it doesn't work. 
 - the idea is to invoke the "mint" method of "token smart contract" from "hello world smart contract" 
 - for doing same, created a "testmint" method in "hello world smart contract" 
 
-- I tried invoking "mint"/"xfer" method directly in client using token_client here https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L501 and it works well. 
+- I tried invoking "mint"/"xfer" method directly in client using token_client here https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L153 and it works well. 
 
 - Though when trying to do same using "testmint"/"deposit" method in "hello world smart contract", turns to an error. 
 
 - To replicate error: clone the repo and run `cargo test --package soroban-hello-token --lib -- test --nocapture` from "smartcontract" folder
 
-- Comment Error Line to run through all test cases: https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L547
+- Comment Error Line to run through all test cases: https://github.com/imentus-rahul/soroban-hello-token/blob/main/smartcontract/src/test.rs#L199
 
 - Applied Solution from community: https://soroban.stellar.org/docs/examples/auth-advanced#testing-auth-by-ed25519
 
 - I know I'm creating signatures not in correct manner, but what's the correct way then?
 
-  - Still stuck with errors like: - `0: "Failed ED25519 verification"` at Line 547 
-  - NativeContract::call at Line 638
+  - Still stuck with errors like:
+  - NativeContract::call at Line 199 and 638
 '''
 thread 'test::test2' panicked at 'called`Result::unwrap()`on an`Err` value: HostError
     Value: Status(UnknownError(0))
