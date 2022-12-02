@@ -26,38 +26,10 @@ fn generate_contract_id() -> [u8; 32] {
     id
 }
 
-// invoke method: "hello" and "world"
-#[test]
-fn test() {
-    let env = Env::default();
-    let contract_id = env.register_contract(None, Contract);
-    let client = ContractClient::new(&env, &contract_id);
-
-    let some_u64: u64 = 3;
-
-    let words = client.hello(&symbol!("Dev"), &some_u64); // passing multiple params
-    let logs = env.logger().all();
-    assert_eq!(
-        logs,
-        std::vec!["fn hello params: to: Symbol(Dev) param2: Object(U64(6))"]
-    );
-    std::println!("{}", logs.join("\n"));
-
-    assert_eq!(words, vec![&env, symbol!("Hello"), symbol!("Dev"),]); // output check returned from "hello" method invocation
-
-    let words = client.world();
-    assert_eq!(words, vec![&env, symbol!("Hello"),]);
-}
-
-// Step 1: Register the hello world smart contract in test cases -> use the helper function from testutils.rs
-// fn register_test_contract
-
-// Step 2: Register the token smart contract for a new asset
-
-// invoke method: "initialize"
 #[test]
 fn test2() {
     let env = Env::default();
+    // let env:Env = Default::default();
     // Deploy the hello world contract here
     let hello_contract_id = env.register_contract(None, Contract); // registering hello world smart contract
     let hello_client = ContractClient::new(&env, hello_contract_id.clone()); // creating hello world client
@@ -94,6 +66,9 @@ fn test2() {
             decimals: 7,
         },
     );
+
+    // let nonce = token_client.nonce(&token_admin_id);
+    // std::println!("🚀 ~ file: test.rs:71 ~ fntest2 ~ nonce {}", nonce);
 
     std::println!("L409 invoked init method of smart contract");
 
@@ -135,15 +110,17 @@ fn test2() {
     //     &BigInt::from_u32(&env, 10),
     // );
 
+    let nonce = token_client.nonce(&token_admin_id);
     // token_client + "mint" + sign
-    let sig = soroban_auth::testutils::ed25519::sign(
+    let mint_sig = soroban_auth::testutils::ed25519::sign(
         &env,
         &token_admin_sign,
         &BytesN::from_array(&env, &id), // token_contract_id BytesN<32>
         symbol!("mint"),
         (
             &token_admin_id,
-            &BigInt::zero(&env),
+            &nonce,
+            // &BigInt::zero(&env),
             &user2_id,                    //user2_id // user1_id
             &BigInt::from_u32(&env, 100), //  0: "Failed ED25519 verification" => when you sign with param as "10" but invoking on "100"
         ),
@@ -152,9 +129,10 @@ fn test2() {
     // minting tokens using token_client and signatures
     token_client.mint(
         // pass AccountId==token_admin
-        &sig,
-        &BigInt::zero(&env),
+        &mint_sig,
+        // &BigInt::zero(&env),
         // &token_client.nonce(&Signature::Invoker.identifier(&env)), // this don't work
+        &nonce,
         &user2_id,
         &BigInt::from_u32(&env, 100),
     );
@@ -186,17 +164,28 @@ fn test2() {
 
     // hello_client + "mint" + sign
     // this don't work
-    let sig = soroban_auth::testutils::ed25519::sign(
+    let nonce2 = token_client.nonce(&token_admin_id);
+
+    // token_client + "mint" + sign
+    let mint_sig2 = soroban_auth::testutils::ed25519::sign(
         &env,
         &token_admin_sign,
-        &hello_contract_id,
+        &BytesN::from_array(&env, &id), // token_contract_id BytesN<32>
         symbol!("mint"),
-        // (&hello_contract_id, &user1_id),
-        (&token_admin_id, &BigInt::zero(&env), &user1_id, &BigInt::from_u32(&env, 10)),
+        (
+            &token_admin_id,
+            &nonce2,
+            // &BigInt::zero(&env),
+            &user2_id,                    //user2_id // user1_id
+            &BigInt::from_u32(&env, 100), //  0: "Failed ED25519 verification" => when you sign with param as "10" but invoking on "100"
+        ),
     );
+
+
     std::println!("x3");
 
-    hello_client.testmint(&sig, &user1_id); // this ain't working
+    // hello_client.testmint(&sig, &user2_id); // this ain't working
+    hello_client.testmint(&mint_sig2, &user2_id); // this ain't working
     std::println!(" if x4 prints, problem is resolved");
 
     std::println!("x4");
@@ -206,8 +195,8 @@ fn test2() {
 
     // check all balances here after minting
     std::println!(
-        "After Minting 2 from Hello Client - token_client.balance(&user1_id): {}",
-        token_client.balance(&user1_id)
+        "After Minting 2 from Hello Client - token_client.balance(&user2_id): {}",
+        token_client.balance(&user2_id)
     );
     std::println!(
         "After Minting 2 from Hello Client - token_client.balance(&vault_account_id): {}",
@@ -277,18 +266,28 @@ fn test2() {
     std::println!("y2");
 
     // // hello_client + "deposit" + sign
-    // this don't work
-    let sig = soroban_auth::testutils::ed25519::sign(
+
+    let nonce3 = token_client.nonce(&user2_id);
+
+    // token_client + "mint" + sign
+    let xfer_sig = soroban_auth::testutils::ed25519::sign(
         &env,
         &user2_sign,
-        &hello_contract_id,
-        symbol!("deposit"),
-        (&user2_id,),
+        &BytesN::from_array(&env, &id), // token_contract_id BytesN<32>
+        symbol!("xfer"),
+        (
+            &user2_id,
+            &nonce3,
+            // &BigInt::zero(&env),
+            &vault_account_id,                    //user2_id // user1_id
+            &BigInt::from_u32(&env, 10), //  0: "Failed ED25519 verification" => when you sign with param as "10" but invoking on "100"
+        ),
     );
+
     std::println!("y3");
 
-    // hello_client.deposit(&sig); // this ain't working
-    // std::println!(" if y4 prints, problem is resolved");
+    hello_client.deposit(&xfer_sig); // this ain't working
+    std::println!(" if y4 prints, problem is resolved");
 
     std::println!("y4");
 

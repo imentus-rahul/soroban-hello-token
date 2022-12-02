@@ -1,3 +1,4 @@
+
 #![no_std]
 use soroban_auth::{Identifier, Signature};
 use soroban_sdk::{
@@ -102,7 +103,8 @@ impl Contract {
     // next method is to deposit the classic stellar token from invoker's account to vault account
     pub fn deposit(e: Env, sig: Signature) {
         let client = token::Client::new(&e, get_token_id(&e)); // token client
-        let nonce = BigInt::zero(&e);
+        // let nonce = BigInt::zero(&e);
+        let nonce = client.nonce(&sig.identifier(&e)); 
         // let nonce = client.nonce(&Signature::Invoker.identifier(&e)); // this may not work
 
         // token fn declarations
@@ -152,29 +154,29 @@ impl Contract {
     // test method mint
     pub fn testmint(e: Env, sig: Signature, to: Identifier) {
 
-        let id = sig.identifier(&e);
-        log!(&e, "SC: id: {} ", &id);
-
+        // let id = sig.identifier(&e);
+        // log!(&e, "SC: id: {} ", &id);
 
         let invoker = e.invoker();
         log!(&e, "SC: Invoker in mint method - here the invoker should be the smart contract: {} ", invoker);
 
         // token_admin: AccountId
         let client = token::Client::new(&e, get_token_id(&e));
-        let nonce = BigInt::zero(&e);
+        // let client = token::Client::new(&e, tok);
+
+        // let nonce = BigInt::zero(&e);
         // let nonce = client.nonce(&Signature::Invoker.identifier(&e)); // this may not work
-        // let nonce = client.nonce(&sig.identifier(&e)); // this may not work
+        let nonce = client.nonce(&sig.identifier(&e)); // this may not work
         log!(&e, "SC: nonce: {} ", &nonce);
 
-
-        let target_amount = get_target_amount(&e); // get target amount that a user needs to transfer
-        log!(&e, "SC: target_amount: {} ", &target_amount);
+        // let target_amount = get_target_amount(&e); // get target amount that a user needs to transfer
+        // log!(&e, "SC: target_amount: {} ", &target_amount);
 
         let target_amount1 = BigInt::from_u32(&e, 100);
         log!(&e, "SC: target_amount1: {} ", &target_amount1);
 
         // client.mint(&Signature::Invoker, &nonce, &to, &target_amount); // this won't work as invoker is smart contract
-        client.mint(&sig, &nonce, &to, &target_amount);
+        client.mint(&sig, &nonce, &to, &target_amount1);
     }
 
     // test method name
